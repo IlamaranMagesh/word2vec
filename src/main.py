@@ -65,7 +65,7 @@ class Model():
                     X.extend([self.vocabulary_index_map.get(idx) for idx in tokens[idx+1:right+1]])
                     yield np.array(X), Y
 
-    def preprocess(self, f:list[str], first:int = 5000, train:bool = False, update_vocab:bool = False):
+    def preprocess(self, f:list[str], first:int = 5000, train:bool = False, update_vocab:bool = False) -> list[str]:
         nlines = 0
         ndigits = 0
         digits = re.compile(r"(\d+)")
@@ -143,8 +143,8 @@ class Model():
 
         print(f"Average Loss: {total_loss/n:.3f}")
 
-    def __fit(self, x:ndarray, y):
-        total_loss = 0
+    def __fit(self, x:ndarray, y) -> float:
+        total_loss = 0.0
 
         # Projection layer ->
         vectors = np.array([self.input_weights[idx] for idx in x])
@@ -179,8 +179,7 @@ class Model():
         # print(f"Average Sample Loss: {total_loss / (self.negative_samples + 1)}")
         return total_loss
 
-    def predict(self, x:list[int]):
-
+    def predict(self, x:list[int]) -> np.signedinteger:
         # Projection layer ->
         vectors = np.array([self.input_weights[idx] for idx in x])
         x_proj = np.average(vectors, axis=0)
@@ -196,7 +195,7 @@ class Model():
         return y_pred
 
 class Loss():
-    def __init__(self, model:Model, alpha):
+    def __init__(self, model:Model, alpha:float):
         self.model = model
         self.grad_win = np.zeros(model.hidden_size, dtype=float)
         self.alpha = alpha
@@ -204,7 +203,7 @@ class Loss():
         self.last_grad_win = np.zeros(model.hidden_size, dtype=float)
         self.last_grad_wout = np.zeros(model.hidden_size, dtype=float)
 
-    def calculate_loss(self, y_pred:float, target_idx:int, x_proj:ndarray, label:int):
+    def calculate_loss(self, y_pred:float, target_idx:int, x_proj:ndarray, label:int) -> float:
         loss = - (label * np.log(y_pred + 1e-7)) - ((1 - label) * np.log(1 - y_pred + 1e-7)) # +1e-7 to prevent log(0)
 
         err = self.alpha * (label - y_pred) # Chain rule -> y_pred - label but to descent the slope, label - y_pred
@@ -230,15 +229,15 @@ class Loss():
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-def get_neg_sample(y, max):
+def get_neg_sample(y:int, max_limit:int) -> int:
     random.seed(datetime.now().timestamp())
     # Uniform sampling but original implementation uses distribution that is inverse to the frequency of the tokens
-    neg_y = random.randint(0, max)
+    neg_y = random.randint(0, max_limit)
     while neg_y == y:
-        neg_y = random.randint(0, max)
+        neg_y = random.randint(0, max_limit)
     return neg_y
 
-def train_test_split(data, seed):
+def train_test_split(data:list[str], seed:int=31) -> tuple[list[str], list[str]]:
     random.seed(seed)
     random.shuffle(data)
     train_size = round(len(data) * 0.8)
