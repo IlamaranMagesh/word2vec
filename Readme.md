@@ -32,4 +32,9 @@ Architecture -
   - Output Layer -
      - Training: $$\sigma(x_{proj} \cdot W_{out}[target])$$ - `Sigmoid Activation` -> output = 0 to 1
      - Inference: $$argmax(x_{proj} \cdot W_{out})$$ - `Argmax Activation` -> output = index of predicted token
+   
+## AI Usage
+
+- AI was not used to generate any snippets or code. It is purely written by the author (Ilamaran Magesh)
+- AI was used to understand the architecture details of the original implementation of Word2Vec. Again only theory, no code generation.
     
